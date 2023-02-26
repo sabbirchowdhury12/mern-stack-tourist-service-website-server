@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
 async function run() {
     try {
         const Services = client.db('touristService').collection('services');
+        const Review = client.db('touristService').collection('review');
 
         //get limit data 
         app.get('/limitServices', async (req, res) => {
@@ -39,9 +40,15 @@ async function run() {
         //get all service data 
         app.get('/serviceDetails/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(id);
             const query = { _id: new ObjectId(id) };
             const result = await Services.findOne(query);
+            res.send(result);
+        });
+
+        //add a review
+        app.post('/addReview', async (req, res) => {
+            const review = req.body;
+            const result = await Review.insertOne(review);
             res.send(result);
         });
 
