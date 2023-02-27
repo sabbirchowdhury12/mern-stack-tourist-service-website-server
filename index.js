@@ -52,6 +52,49 @@ async function run() {
             res.send(result);
         });
 
+        //get all review
+        app.get('/allReview', async (req, res) => {
+            const result = await Review.find({}).sort({ time: -1 }).toArray();
+            res.send(result);
+        });
+
+        //get all my review
+        app.get('/myReview', async (req, res) => {
+            // console.log(req.query.email);
+            let query = {};
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                };
+            }
+            const result = await Review.find(query).toArray();
+            res.send(result);
+        });
+
+        //delete a review
+        app.delete('/deleteReview/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await Review.deleteOne(query);
+            res.send(result);
+        });
+
+        //update a review
+        app.put('/updateReview/:id', async (req, res) => {
+            const id = req.params.id;
+            const message = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    comment: message.message,
+                    edited: true
+                },
+            };
+            const result = await Review.updateOne(filter, updateDoc, options);
+            res.send(result);
+        });
+
 
     }
     finally {
