@@ -95,6 +95,13 @@ async function run() {
             res.send(result);
         });
 
+        //add a service
+        app.post('/addService', async (req, res) => {
+            const service = req.body;
+            const result = await Services.insertOne(service);
+            res.send(result);
+        });
+
 
     }
     finally {
