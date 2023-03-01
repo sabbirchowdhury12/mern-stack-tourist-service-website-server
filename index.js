@@ -2,8 +2,10 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const port = process.env.PORT || 5000;
+var jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { verfyJWT } = require('./midleware');
 
 // midleware
 app.use(cors());
@@ -24,6 +26,18 @@ async function run() {
         const Services = client.db('touristService').collection('services');
         const Review = client.db('touristService').collection('review');
 
+
+        //jwt token
+        app.use('/jwt', async (req, res) => {
+            const user = {
+                name: req.body.name,
+                email: req.body.email
+            };
+
+            const token = jwt.sign(user, process.env.TOKEN_SECRET_KEY, { expiresIn: '1hr' });
+
+            res.status(200).json({ token: token });
+        });
         //get limit data 
         app.get('/limitServices', async (req, res) => {
             const cursor = Services.find({}).sort({ date: -1 });
@@ -59,8 +73,12 @@ async function run() {
         });
 
         //get all my review
-        app.get('/myReview', async (req, res) => {
+        app.get('/myReview', verfyJWT, async (req, res) => {
             // console.log(req.query.email);
+            const decoded = req.decoded;
+            if (decoded.email !== req.query.email) {
+                return res.status(401).send({ message: "anathorizrd access" });
+            }
             let query = {};
             if (req.query.email) {
                 query = {
